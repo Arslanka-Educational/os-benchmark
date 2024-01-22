@@ -992,27 +992,27 @@ pidstat -d -p `pgrep stress-ng | sed '1d' | tr '\n' ',' | sed 's/.$//'`
 
 
 ## Iomix-read
-<img src="io/io/iomix-read-1.png" alt="iomix-read-1" width="200"/>
-<img src="io/io/iomix-read-2.png" alt="iomix-read-2" width="200"/>
-<img src="io/io/iomix-read-3.png" alt="iomix-read-3" width="200"/>
-<img src="io/io/iomix-read-4.png" alt="iomix-read-4" width="200"/>
-<img src="io/io/iomix-read-5.png" alt="iomix-read-5" width="200"/>
-<img src="io/io/iomix-read-6.png" alt="iomix-read-6" width="200"/>
-<img src="io/io/iomix-read-7.png" alt="iomix-read-7" width="200"/>
-<img src="io/io/iomix-read-8.png" alt="iomix-read-8" width="200"/>
-<img src="io/io/iomix-read-9.png" alt="iomix-read-9" width="200"/>
+<img src="io/io/iomix-read-1.png" alt="iomix-read-1" width="400"/>
+<img src="io/io/iomix-read-2.png" alt="iomix-read-2" width="400"/>
+<img src="io/io/iomix-read-3.png" alt="iomix-read-3" width="400"/>
+<img src="io/io/iomix-read-4.png" alt="iomix-read-4" width="400"/>
+<img src="io/io/iomix-read-5.png" alt="iomix-read-5" width="400"/>
+<img src="io/io/iomix-read-6.png" alt="iomix-read-6" width="400"/>
+<img src="io/io/iomix-read-7.png" alt="iomix-read-7" width="400"/>
+<img src="io/io/iomix-read-8.png" alt="iomix-read-8" width="400"/>
+<img src="io/io/iomix-read-9.png" alt="iomix-read-9" width="400"/>
 
 ## Iomix-write
 
-<img src="io/io/iomix-write-1.png" alt="iomix-write-1" width="200"/>
-<img src="io/io/iomix-write-2.png" alt="iomix-write-2" width="200"/>
-<img src="io/io/iomix-write-3.png" alt="iomix-write-3" width="200"/>
-<img src="io/io/iomix-write-4.png" alt="iomix-write-4" width="200"/>
-<img src="io/io/iomix-write-5.png" alt="iomix-write-5" width="200"/>
-<img src="io/io/iomix-write-6.png" alt="iomix-write-6" width="200"/>
-<img src="io/io/iomix-write-7.png" alt="iomix-write-7" width="200"/>
-<img src="io/io/iomix-write-8.png" alt="iomix-write-8" width="200"/>
-<img src="io/io/iomix-write-9.png" alt="iomix-write-9" width="200"/>
+<img src="io/io/iomix-write-1.png" alt="iomix-write-1" width="400"/>
+<img src="io/io/iomix-write-2.png" alt="iomix-write-2" width="400"/>
+<img src="io/io/iomix-write-3.png" alt="iomix-write-3" width="400"/>
+<img src="io/io/iomix-write-4.png" alt="iomix-write-4" width="400"/>
+<img src="io/io/iomix-write-5.png" alt="iomix-write-5" width="400"/>
+<img src="io/io/iomix-write-6.png" alt="iomix-write-6" width="400"/>
+<img src="io/io/iomix-write-7.png" alt="iomix-write-7" width="400"/>
+<img src="io/io/iomix-write-8.png" alt="iomix-write-8" width="400"/>
+<img src="io/io/iomix-write-9.png" alt="iomix-write-9" width="400"/>
 
 Можно заметить, что тренды не меняются от числа Workers с течение времени. Можно увеличить время длительности программы.
 
@@ -1033,11 +1033,15 @@ memory: [memfd-fds, shm];
 ```
 
 ```bash
+    stress-ng --memfd 8 --memfd-fds $N -t 10s –metrics | sar 1 6 -r 
+    stress-ng --shm 8 -t 10s –metrics | sar 1 6 -r
+```
+```bash
  for N in 100 500 1500 3000 4096 8192
         do
             uptime
-            stress-ng --memfd 8 --memfd-fds $N -t 10s –metrics | sar 1 6 -r 
-            stress-ng --shm 8 -t 10s –metrics | sar 1 6 -r
+            sudo perf mem record -a -- stress-ng --memfd 8 --memfd-fds $N -t 10s –metrics | sar 1 6 -r 
+            sudo perf mem -t load report --sort=mem
             uptime
         done
 ```
@@ -1131,4 +1135,110 @@ Value 8192 is out of range for memfd-fds, allowed: 8 .. 4096
 Average:       949566  15000403    882565      5.39    328536  13354416   1374444      8.40   4199277  10204185       107
  09:08:53 up 105 days, 19:17,  1 user,  load average: 0.00, 0.00, 4.25
  ```
- 
+
+ <img src="mem/mem-fd.png" alt="mem" width="800"/>
+
+
+### Банчмарк Network
+
+```
+network:[netlink-proc, netlink-task]; 
+```
+
+```bash
+sudo stress-ng --netlink-proc 1 --netlink-proc-ops 1000
+sudo stress-ng --netlink-task 	1 --netlink-task-ops 	10000000
+```
+
+```bash
+sudo stress-ng --netlink-proc 1 --netlink-proc-ops 1000
+sar -u 1 99
+07:48:53    	CPU 	%user 	%nice   %system   %iowait	%steal 	%idle
+07:48:54    	all  	0.13  	1.41 	12.15  	0.00  	0.00 	86.32
+07:48:55    	all  	0.38  	3.03 	12.36  	0.13  	0.00 	84.11
+07:48:56    	all  	0.38  	2.41 	12.04  	0.00  	0.00 	85.17
+07:48:57    	all  	0.75  	2.77 	12.33  	0.00  	0.00 	84.15
+07:48:58    	all  	0.00  	1.78  	0.51  	0.00  	0.00 	97.72
+
+sudo stress-ng --netlink-proc 2 --netlink-proc-ops 1000
+07:50:16    	all  	1.87  	2.62 	23.54  	0.12  	0.00 	71.86
+
+sudo stress-ng --netlink-proc 3 --netlink-proc-ops 10000
+07:51:31    	all  	0.25  	2.60 	36.88  	0.00  	0.00 	60.27
+
+sudo stress-ng --netlink-proc 4 --netlink-proc-ops 10000
+07:52:08    	all  	0.00  	3.61 	50.00  	0.00  	0.00 	46.39
+
+sudo stress-ng --netlink-proc 8 --netlink-proc-ops 10000
+07:52:46    	all  	0.12  	4.88 	91.75  	0.00  	0.00  	3.25
+
+sudo stress-ng --netlink-proc 16 --netlink-proc-ops 10000
+07:53:16    	all  	0.25  	5.62 	94.13  	0.00  	0.00  	0.00
+
+sudo stress-ng --netlink-proc 32 --netlink-proc-ops 10000
+07:53:55    	all  	0.25  	4.74 	95.01  	0.00  	0.00  	0.00
+```
+
+```bash
+07:54:25    	CPU 	%user 	%nice   %system   %iowait	%steal 	%idle
+
+sudo stress-ng --sockdiag 1 --sockdiag-ops 100000000
+07:54:33    	all  	0.38  	1.01 	11.95  	0.00  	0.00 	86.67
+
+sudo stress-ng --sockdiag 2 --sockdiag-ops 100000000
+07:55:41    	all  	0.00  	2.65 	24.09  	0.00  	0.00 	73.27
+
+sudo stress-ng --sockdiag 4 --sockdiag-ops 100000000
+07:56:34    	all  	0.25  	2.92 	48.67  	0.00  	0.00 	48.16
+
+sudo stress-ng --sockdiag 8 --sockdiag-ops 100000000
+07:56:53    	all  	0.00  	6.14 	93.86  	0.00  	0.00  	0.00
+
+sudo stress-ng --sockdiag 16 --sockdiag-ops 100000000
+07:57:16    	all  	0.25  	6.64 	93.11  	0.00  	0.00  	0.00
+```
+
+<img src="network/netlink-proc.png" alt="iomix-write-1" width="800"/>
+
+### Нагрузка Pipe
+
+```
+pipe:	[pipe-data-size, pipeherd-yield]
+```
+
+
+```openat(AT_FDCWD, "/sys/devices/system/cpu/cpu5/cache/index3/coherency_line_size", O_RDONLY) = 4
+read(4, "64\n", 2048)               	= 3
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu5/cache/index3/ways_of_associativity", O_RDONLY) = 4
+read(4, "12\n", 2048)               	= 3
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu6/online", O_RDONLY) = 4
+read(4, "1\n", 2048)                	= 2
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu6/cache", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 4
+newfstatat(4, "", {st_mode=S_IFDIR|0755, st_size=0, ...}, AT_EMPTY_PATH) = 0
+getdents64(4, 0x61fb2d640c70 /* 7 entries */, 32768) = 208
+getdents64(4, 0x61fb2d640c70 /* 0 entries */, 32768) = 0
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu6/cache/index0/type", O_RDONLY) = 4
+read(4, "Data\n", 2048)             	= 5
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu6/cache/index0/size", O_RDONLY) = 4
+read(4, "32K\n", 2048)              	= 4
+close(4)                            	= 0
+openat(AT_FDCWD, "/sys/devices/system/cpu/cpu6/cache/index0/level", O_RDONLY) = 4
+read(4, "1\n", 2048)                	= 2
+close(4)
+```       	
+
+<img src="pipe/pipe.png" alt="pipe" width="800"/>
+
+
+## Бенчмарк shed
+
+```
+perf stat -e cs stress-ng --yield 1 --sched deadline --sched-deadline 100000 - t 10s --metrics | sar 1 10 -u -b
+```
+
+<img src="sched/sched.png" alt="pipe" width="800"/>
