@@ -1037,6 +1037,7 @@ memory: [memfd-fds, shm];
         do
             uptime
             stress-ng --memfd 8 --memfd-fds $N -t 10s –metrics | sar 1 6 -r 
+            stress-ng --shm 8 -t 10s –metrics | sar 1 6 -r
             uptime
         done
 ```
